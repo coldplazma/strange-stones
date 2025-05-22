@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strange Stones Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .content-card {
+            background-color: white;
+            border-radius: 0.75rem; /* md */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem; /* p-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .btn {
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+        .btn-secondary {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+        .result-section {
+            margin-top: 1rem; /* mt-4 */
+            padding: 1rem; /* p-4 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            border-radius: 0.5rem; /* rounded-md */
+            background-color: #f9fafb; /* gray-50 */
+            min-height: 100px;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #1f2937; /* gray-800 */
+            margin-bottom: 0.5rem;
+        }
+        .result-text p {
+            margin-bottom: 0.75rem; /* mb-3 */
+            line-height: 1.6;
+        }
+        .result-text strong {
+            color: #1e40af; /* blue-800 */
+        }
+        .checkbox-label {
+            margin-left: 0.5rem; /* ml-2 */
+            color: #374151; /* gray-700 */
+        }
+        h1, h2 {
+            color: #111827; /* gray-900 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 p-4 md:p-8">
+
+    <div class="container mx-auto max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-slate-700">Strange Stones Generator</h1>
+            <p class="text-slate-500">Generate random megalithic sites for your fantasy RPG!</p>
+        </header>
+
+        <div class="content-card">
+            <h2 class="text-2xl font-semibold mb-4">Generate Stone Site</h2>
+            <div class="space-y-4 mb-6">
+                <div>
+                    <input type="checkbox" id="useD24" class="rounded">
+                    <label for="useD24" class="checkbox-label">Use d24 for complex stone types (results 21-24 yield 3 combined features)</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="forceRunes" class="rounded">
+                    <label for="forceRunes" class="checkbox-label">Force Weird Runes (normally 25% chance)</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="forceUnusual" class="rounded">
+                    <label for="forceUnusual" class="checkbox-label">Force Something Unusual (normally 25% chance)</label>
+                </div>
+                 <div>
+                    <input type="checkbox" id="autoStrangeEffect" class="rounded" checked>
+                    <label for="autoStrangeEffect" class="checkbox-label">Automatically roll for triggered Strange Effects</label>
+                </div>
+            </div>
+            <button id="generateStoneButton" class="btn btn-primary w-full sm:w-auto">Generate Strange Stone Site</button>
+            
+            <div id="stoneResult" class="result-section">
+                <p class="text-slate-400 italic">Your generated stone description will appear here.</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <h2 class="text-2xl font-semibold mb-4">Simulate Defacing a Stone</h2>
+            <button id="generateBadIdeaButton" class="btn btn-secondary w-full sm:w-auto">What Happens?</button>
+            <div id="badIdeaResult" class="result-section">
+                <p class="text-slate-400 italic">The consequences of your actions will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Helper Functions ---
+        function rollDie(sides) {
+            return Math.floor(Math.random() * sides) + 1;
+        }
+
+        function rollD66() {
+            const d1 = rollDie(6);
+            const d2 = rollDie(6);
+            return parseInt(String(d1) + String(d2));
+        }
+
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+        
+        // --- Data Tables (condensed from PDF) ---
+
+        const randomRocksTable = [
+            { range: [1,1], text: "Single ancient stone worn down by the ages." },
+            { range: [2,2], text: "Single ring of simple standing menhirs." },
+            { range: [3,3], text: "Double ring of stones." },
+            { range: [4,4], text: "Large pyramid-shaped stone sits here like an unnatural hill." },
+            { range: [5,5], text: "Natural 'throne' of mossy stone." },
+            { range: [6,6], text: "Table stone held up by two smaller stones." },
+            { range: [7,7], text: "Pierced stone (either by the elements or by workmen) made into a unique menhir." },
+            { range: [8,8], text: "Fallen stones that were once a circle, now mostly buried and covered." },
+            { range: [9,9], text: "Two tall standing carved columns, once part of a temple or other structure." },
+            { range: [10,10], text: "Massive exposed bedrock with natural looking protrusions in a circle (probably formed by magic or the actions of earth elementals)." },
+            { range: [11,11], text: "Massive menhir carved to resemble a knife, axe or other weapon." },
+            { range: [12,12], text: "Semicircle of menhirs with a stone \"throne\" at the centre of the arc." },
+            { range: [13,13], text: "Large stone lays flat at table height. Shape: {FLAT_STONE_SHAPE}.", dynamic: "FLAT_STONE_SHAPE" },
+            { range: [14,14], text: "Tall worked obelisk. Cross-section: {OBELISK_CROSS_SECTION}.", dynamic: "OBELISK_CROSS_SECTION" },
+            { range: [15,15], text: "Multiple stones placed together to form a chair or throne." },
+            { range: [16,16], text: "Two stones holding up a lintel stone." },
+            { range: [17,17], text: "{LINTEL_STONES} stones holding up a lintel stone.", dynamic: "LINTEL_STONES" },
+            // 18-20 (d20) or 18-24 (d24) are handled by logic to combine results
+        ];
+        const RANDOM_ROCKS_BASE_MAX_ROLL = 17; // Max roll for a single, non-combined feature
+
+        const weirdRunesTable = [
+            { range: [1,1], text: "Text so worn down by age that nothing can be deciphered." },
+            { range: [2,2], text: "Warnings to not disturb this site." },
+            { range: [3,3], text: "Elaborate knotwork or carvings of vines and leaves." },
+            { range: [4,4], text: "Simple geometrics - circles, triangles, etc." },
+            { range: [5,5], text: "Simple geometrics - circles, triangles, etc. Tracing the shapes with a finger triggers {{STRANGE_EFFECT}}.", triggersEffect: true },
+            { range: [6,6], text: "Simple geometrics - circles, triangles, etc. Tracing the shapes with {RUNE_MATERIAL} triggers {{STRANGE_EFFECT}}.", dynamic: "RUNE_MATERIAL", triggersEffect: true },
+            { range: [7,7], text: "Hand print." },
+            { range: [8,8], text: "Hand print. Putting your hand in the print triggers {{STRANGE_EFFECT}}.", triggersEffect: true },
+            { range: [9,9], text: "Hand print. Putting your hand (covered in blood) in the print triggers {{STRANGE_EFFECT}}.", triggersEffect: true },
+            { range: [10,10], text: "An eye watching over the site." },
+            { range: [11,11], text: "Short historical or prophetic text." },
+            { range: [12,12], text: "Longer historical or prophetic text covers the stone(s)." },
+            { range: [13,13], text: "Arcane text in a magical language. When read aloud it triggers {{STRANGE_EFFECT}}.", triggersEffect: true },
+            { range: [14,14], text: "Arcane text in a magical language. Treat as a spell scroll. The text fades and comes back after {RUNE_REAPPEAR_TIME}.", dynamic: "RUNE_REAPPEAR_TIME" },
+            { range: [15,15], text: "Arcane glyphs that trigger {{STRANGE_EFFECT}} when rubbed or cleaned.", triggersEffect: true },
+            { range: [16,16], text: "Depictions of animals or spirits." },
+            { range: [17,17], text: "Depictions of monsters." },
+            { range: [18,18], text: "Instructions to follow to trigger {{STRANGE_EFFECT}} (walk around the stones counter-clockwise, burn certain incense, sacrifice something).", triggersEffect: true },
+            // 19-20 are handled by logic
+        ];
+        const WEIRD_RUNES_BASE_MAX_ROLL = 18;
+
+        const somethingUnusualTable = [
+            { range: [1,1], text: "Bears a prominent keyhole. If the right magical key is used it triggers {{STRANGE_EFFECT}}.", triggersEffect: true },
+            { range: [2,2], text: "Bears a well concealed and hard to find keyhole. If the right magical key is used it triggers {{STRANGE_EFFECT}}.", triggersEffect: true },
+            { range: [3,3], text: "Glows faintly in the dark." },
+            { range: [4,4], text: "Positioned in a manner that should fall over, and yet doesn't." },
+            { range: [5,5], text: "Floating d12 inches above the ground." },
+            { range: [6,6], text: "Has {NUM_GEMS} gems embedded in the stone. Prying them out is treated as a bad idea. (Value is determined as normal for gems).", dynamic: "NUM_GEMS" },
+            { range: [7,7], text: "Is very smooth like a fine sculpture." },
+            { range: [8,8], text: "As [7], but smoothed down to a polished near-mirror finish." }, // Interpreted
+            { range: [9,9], text: "Has massive cracks, but is still standing." },
+            { range: [10,10], text: "Each stone is made of two or more contrasting stone types, perhaps merged magically." },
+            { range: [11,11], text: "Unusual Material: Huge pieces of bone." },
+            { range: [12,12], text: "Unusual Material: Jade." },
+            { range: [13,13], text: "Unusual Material: {UNUSUAL_METAL}.", dynamic: "UNUSUAL_METAL" },
+            { range: [14,14], text: "Unusual Material: Quartz." },
+            { range: [15,15], text: "Unusual Material: Coal." },
+            { range: [16,16], text: "Unusual Material: Veins of bright purple, red, green or other colour mixed into the stone." },
+            { range: [17,17], text: "Home to a lot of wildlife - bird nests, deer, etc." },
+            { range: [18,18], text: "Completely painted in one or more bright colours." },
+            // 19-20 are handled by logic
+        ];
+        const SOMETHING_UNUSUAL_BASE_MAX_ROLL = 18;
+        
+        // Pre-processed "As [X]" for simplicity
+        somethingUnusualTable.find(item => item.range[0] === 8).text = "Is very smooth like a fine sculpture, smoothed down to a polished near-mirror finish.";
+
+
+        const strangeEffectsTable = {
+            11: "Teleported to a location appropriately linked to these stones within 1d10 miles.",
+            12: "All within 30' are teleported to a location appropriately linked to these stones within 1d10 miles.",
+            13: "Continual Light / Continual Flame is cast on your hand or weapon as appropriate.",
+            14: "Blessed as the Bless Spell for 2d12 hours.",
+            15: "Spellcasters who prepare spells have their prepared spells randomized from their known spells.",
+            16: "Gain advantage on all Strength checks for d12 days.",
+            21: "Gain advantage on all Intelligence checks for d12 days.",
+            22: "Gain advantage on all Wisdom checks for d12 days.",
+            23: "Gain advantage on all Dexterity checks for d12 days.",
+            24: "Gain advantage on all Constitution checks for d12 days.",
+            25: "Gain advantage on all Charisma checks for d12 days.",
+            26: "Gain advantage on next saving throw.",
+            31: "Gain advantage on all saving throws for 24 hours.",
+            32: "Healing wave heals 2d8 hit points to all within 30 feet.",
+            33: "Healing wave heals 4d8 hit points to all within 60 feet.",
+            34: "Healing wave heals 6d8 hit points to all within 120 feet.",
+            35: "Creates food and drink for 1d12 people per stone.",
+            36: "Sanctuary spell effect for 2d12 hours.",
+            41: "Primary weapon becomes +1 (or is improved by +1) for d12 days.",
+            42: "An elemental is summoned - unless the triggering person is of the same faith as the circle makers the elemental is immediately hostile.",
+            43: "Gain the ability to cast a spell once. Pick or randomly determine a spell of level {SPELL_LEVEL_EFFECT}. Spells will typically be druidic or clerical, but might be from any list.",
+            44: "Gain the ability to cast a spell (as per effect 43, level {SPELL_LEVEL_EFFECT}) 1d4+1 times.",
+            45: "Gain the ability to cast a spell (as per effect 43, level {SPELL_LEVEL_EFFECT}) once per day for the next {SPELL_DURATION_EFFECT}.",
+            46: "Gain the benefit of a shield spell against the next 1d6 successful attacks or magic missile spells.",
+            51: "Remove curse is cast on all within 120 feet.",
+            52: "Portal opens to another world or plane associated with the standing stones (or to a very distant land) and remains open for two way travel for 1d6 hours.",
+            53: "Bestows a feeble curse on the person triggering the strange effect. {{FEEBLE_CURSE}}",
+            54: "Bestows a minor curse on the person triggering the strange effect ({{MINOR_CURSE}}) and a feeble curse on all within 120 feet ({{FEEBLE_CURSE}}).",
+            55: "Bestows a major curse on the person triggering the strange effect ({{MAJOR_CURSE}}) and a minor curse on all within 120 feet ({{MINOR_CURSE}}).",
+            56: "All melee weapon attacks are imbued with elemental energy for the next 1d12 days, adding 1d8 damage of the appropriate type.",
+            61: "Gain the benefit of a Contact Other Plane spell.",
+            62: "An anti-magic shell covers the area of the stones + (1d6x10) foot radius beyond for (1d10x1d10) minutes.",
+            63: "A wall of fire encircles the area of the stones for 1d12 hours.",
+            64: "Gain the effects of a potion rolled for as normal (reroll non-imbibed potions).",
+            // 65-66 handled by logic
+        };
+        const STRANGE_EFFECTS_ROLL_KEYS = Object.keys(strangeEffectsTable).map(Number);
+
+
+        const badIdeaTable = [
+            { range: [1,1], text: "Triggers one last {{STRANGE_EFFECT}}." },
+            { range: [2,2], text: "Triggers 1d3 strange effects: {{STRANGE_EFFECT_MULTI}}." },
+            { range: [3,3], text: "Curses the defiler with a feeble curse: {{FEEBLE_CURSE}}." },
+            { range: [4,4], text: "Triggers {{STRANGE_EFFECT}} and a feeble curse on the defiler: {{FEEBLE_CURSE}}." },
+            { range: [5,5], text: "Triggers {{STRANGE_EFFECT}} and a feeble curse on all within 100 yards: {{FEEBLE_CURSE}}." },
+            { range: [6,6], text: "Curses the defiler with a minor curse: {{MINOR_CURSE}}." },
+            { range: [7,7], text: "Triggers {{STRANGE_EFFECT}} and a minor curse on the defiler: {{MINOR_CURSE}}." },
+            { range: [8,8], text: "Triggers {{STRANGE_EFFECT}} and a minor curse on all within 100 yards: {{MINOR_CURSE}}." },
+            { range: [9,9], text: "Curses the defiler with a major curse: {{MAJOR_CURSE}}." },
+            { range: [10,10], text: "Triggers {{STRANGE_EFFECT}} and a major curse on the defiler: {{MAJOR_CURSE}}." },
+            { range: [11,11], text: "Triggers {{STRANGE_EFFECT}} and a major curse on the defiler ({{MAJOR_CURSE}}) and a minor curse on all within 100 yards ({{MINOR_CURSE}})." },
+            { range: [12,12], text: "Curses the defiler with a divine curse: {{DIVINE_CURSE}}." },
+            { range: [13,13], text: "Curses the defiler with a divine curse ({{DIVINE_CURSE}}) and a major curse on all within 100 yards ({{MAJOR_CURSE}})." },
+            { range: [14,14], text: "Curses the defiler with a divine curse ({{DIVINE_CURSE}}), a major curse on all within 100 yards ({{MAJOR_CURSE}}), and a feeble curse on all within 1 mile ({{FEEBLE_CURSE}})." },
+            { range: [15,20], text: "Nothing happens." }
+        ];
+
+        const feebleCurses = [
+            "Hair falls out and will not regrow", "Disadvantage on next saving throw", "Lose one prepared spell for the day",
+            "Itchiness causes -2 on attack rolls", "Miss next attack", "Next spell cast will fail",
+            "Roll 1d20 under Dex whenever trying to run to avoid falling", "Gradually change race to a random humanoid race (purely cosmetic, no game effects)",
+            "Automatically are surprised next time you need to check for surprise", "Dogs and horses are skittish and difficult to control in your presence",
+            "-1 penalty on all d20 rolls", "Grow an extra thumb on each hand"
+        ];
+
+        const minorCurses = [
+            "Disadvantage on all saving throws", "Disadvantage on all attack rolls", "Disadvantage on all social rolls",
+            "+/- 1 penalty on all rolls of all dice (whatever makes the roll worse)", "-2 damage per die on all attacks and spells",
+            "Can never tell the truth", "Must always tell the truth", "All spells cast must also roll on the wild surge table",
+            "Rations, water, wine, etc all spoil within 24 hours", "Starts all combats surprised",
+            "Your shadow becomes hostile and cunning, will wait for an opportune moment to attack (as the monster of the same name)",
+            "Wounds take twice as long to heal, and healing magic is only half as effective"
+        ];
+
+        const majorCurses = [
+            "Struck blind and deaf", "Polymorphed into a frog or other harmless animal", "Re-roll your highest ability score using 2d8",
+            "Cannot heal damage taken by any means", "Instantly die if reduced to 0 hit points", "Lose all spellcasting ability",
+            "+/-3 penalty on all rolls of all dice (whatever makes the roll worse)", "Nightmares / Daymares prevent all sleep or rest or meditation",
+            "Age 1d6 years per day", "Disadvantage on all attacks, checks, and saves",
+            "Non-artifact weapons wielded will break on the first blow", "All attacks against the cursed victim gain advantage"
+        ];
+
+        const divineCurses = [
+            "+/-6 penalty on all rolls of all dice (whatever makes the roll worse)", "Re-roll all ability scores with 2d8",
+            "Automatically fail all saving throws", "Triple damage is received from all sources", "Age 1d6 years per combat round",
+            "d6+1 companions or friends and family are subjected to random major curses: {COMPANION_CURSES}", // Special handling
+            "Every time you kill an enemy, make a Constitution save DC 15 (or a save vs death) or join them in death",
+            "Lose all class and level abilities, becoming a simple commoner for the duration",
+            "Polymorphed into a hostile and violent dragon with no memories of prior life (of a power level roughly capable of fighting the curse victim's companions)",
+            "Suffer damage equal to the damage you deal from attacks and spells", "Cannot communicate in any spoken, gestured, or written language",
+            "d3 each of feeble, minor, and major curses: {MULTI_CURSE_DIVINE}" // Special handling
+        ];
+
+        // --- Dynamic Content Functions ---
+        function getFlatStoneShape() {
+            const roll = rollDie(6);
+            if (roll <= 2) return "Square";
+            if (roll === 3) return "Circular";
+            if (roll === 4) return "Rectangular";
+            return "Some other shape (triangle, hexagon, highly irregular, etc)";
+        }
+
+        function getObeliskCrossSection() {
+            const roll = rollDie(6);
+            if (roll <= 2) return "Triangular cross-section";
+            if (roll <= 5) return "Square cross-section";
+            return `${rollDie(4) + 4} sided cross-section`;
+        }
+
+        function getLintelStones() {
+            return rollDie(3) + 1;
+        }
+
+        function getRuneMaterial() {
+            const roll = rollDie(4);
+            if (roll <= 2) return "Blood"; // PDF says [1-2] Blood, [2] Wine - typo? Assuming 1=Blood, 2=Wine, 3=Water
+            if (roll === 2) return "Wine"; // Corrected based on common interpretation
+            if (roll === 3) return "Water";
+            return "Other esoteric liquid"; // Default for roll 4
+        }
+        
+        function getRuneReappearTime() {
+            const roll = rollDie(8); // PDF says 1d8, then lists up to 9. Assuming 1d8 for 8 options.
+            if (roll === 1) return "24 hours";
+            if (roll <= 3) return "1 week";
+            if (roll <= 5) return "1 month";
+            if (roll <= 7) return "1 year";
+            if (roll === 8) return "1d12 years";
+            // if (roll === 9) return "never"; // Not reachable with 1d8, but was in PDF
+            return "never (or after 1d12 years if roll was 8)"; // Clarification
+        }
+
+        function getNumberOfGems() {
+            return rollDie(6) * rollDie(6);
+        }
+
+        function getUnusualMetal() {
+            const roll = rollDie(6);
+            if (roll <= 3) return "Rusted iron";
+            if (roll <= 5) return "Steel";
+            return "Silver or Gold plated";
+        }
+        
+        function getSpellLevelEffect() {
+            const roll = rollDie(6);
+            if (roll <= 2) return "1";
+            if (roll <= 4) return "2";
+            if (roll === 5) return "3";
+            return "4";
+        }
+
+        function getSpellDurationEffect() {
+            const roll = rollDie(6);
+            if (roll <= 3) return "1 week";
+            if (roll <= 5) return "two weeks";
+            return "1 month";
+        }
+
+        // --- Core Generation Logic ---
+        function generateSingleStrangeEffect(isCalledRecursively = false) {
+            let effectRoll = rollD66();
+            let effectText = "";
+
+            if (!isCalledRecursively && (effectRoll === 65 || effectRoll === 66)) {
+                effectText = `<strong>Extra Special Effect:</strong><br>1. ${generateSingleStrangeEffect(true)}<br>2. ${generateSingleStrangeEffect(true)}`;
+            } else {
+                // Ensure roll is valid if recursing from 65/66
+                while ((effectRoll === 65 || effectRoll === 66) && isCalledRecursively) {
+                    effectRoll = rollD66();
+                }
+                effectText = strangeEffectsTable[effectRoll] || `Unknown effect for roll ${effectRoll}. This is a fallback.`;
+
+                if (effectText.includes("{SPELL_LEVEL_EFFECT}")) {
+                    effectText = effectText.replace(/{SPELL_LEVEL_EFFECT}/g, getSpellLevelEffect());
+                }
+                if (effectText.includes("{SPELL_DURATION_EFFECT}")) {
+                    effectText = effectText.replace(/{SPELL_DURATION_EFFECT}/g, getSpellDurationEffect());
+                }
+                if (effectText.includes("{{FEEBLE_CURSE}}")) {
+                     effectText = effectText.replace(/{{FEEBLE_CURSE}}/g, `(${getRandomElement(feebleCurses)})`);
+                }
+                if (effectText.includes("{{MINOR_CURSE}}")) {
+                     effectText = effectText.replace(/{{MINOR_CURSE}}/g, `(${getRandomElement(minorCurses)})`);
+                }
+                if (effectText.includes("{{MAJOR_CURSE}}")) {
+                     effectText = effectText.replace(/{{MAJOR_CURSE}}/g, `(${getRandomElement(majorCurses)})`);
+                }
+            }
+            // Add frequency note
+            const freqRoll = rollDie(6);
+            let frequency = "";
+            if (freqRoll === 1) frequency = "once per hour";
+            else if (freqRoll <= 3) frequency = "once per day";
+            else if (freqRoll === 4) frequency = "once per week";
+            else if (freqRoll === 5) frequency = "once per month";
+            else frequency = "once per year";
+            
+            return `${effectText} (This effect can typically be triggered ${frequency}.)`;
+        }
+        
+        function processTableEntry(entry, autoStrangeEffect) {
+            let text = entry.text;
+            if (entry.dynamic) {
+                switch (entry.dynamic) {
+                    case "FLAT_STONE_SHAPE": text = text.replace("{FLAT_STONE_SHAPE}", getFlatStoneShape()); break;
+                    case "OBELISK_CROSS_SECTION": text = text.replace("{OBELISK_CROSS_SECTION}", getObeliskCrossSection()); break;
+                    case "LINTEL_STONES": text = text.replace("{LINTEL_STONES}", getLintelStones()); break;
+                    case "RUNE_MATERIAL": text = text.replace("{RUNE_MATERIAL}", getRuneMaterial()); break;
+                    case "RUNE_REAPPEAR_TIME": text = text.replace("{RUNE_REAPPEAR_TIME}", getRuneReappearTime()); break;
+                    case "NUM_GEMS": text = text.replace("{NUM_GEMS}", getNumberOfGems()); break;
+                    case "UNUSUAL_METAL": text = text.replace("{UNUSUAL_METAL}", getUnusualMetal()); break;
+                }
+            }
+            if (entry.triggersEffect && autoStrangeEffect && text.includes("{{STRANGE_EFFECT}}")) {
+                 text = text.replace("{{STRANGE_EFFECT}}", `[Effect: ${generateSingleStrangeEffect()}]`);
+            } else if (text.includes("{{STRANGE_EFFECT}}")) {
+                text = text.replace("{{STRANGE_EFFECT}}", "[A Strange Effect is triggered! Roll separately or enable auto-roll.]");
+            }
+            return text;
+        }
+
+        function getCombinedResults(table, baseMaxRoll, numToCombine, autoStrangeEffect) {
+            let combined = [];
+            let usedIndices = new Set();
+            for (let i = 0; i < numToCombine; i++) {
+                let roll;
+                let entry;
+                do {
+                    roll = rollDie(baseMaxRoll);
+                    entry = table.find(item => roll >= item.range[0] && roll <= item.range[1]);
+                } while (usedIndices.has(roll) && usedIndices.size < baseMaxRoll); // Try for unique
+                usedIndices.add(roll);
+                if (entry) {
+                    combined.push(processTableEntry(entry, autoStrangeEffect));
+                } else {
+                    combined.push(`Error finding entry for roll ${roll} in sub-table.`);
+                }
+            }
+            return combined.join("<br>AND<br>");
+        }
+
+
+        function generateStoneSite() {
+            const useD24 = document.getElementById('useD24').checked;
+            const forceRunes = document.getElementById('forceRunes').checked;
+            const forceUnusual = document.getElementById('forceUnusual').checked;
+            const autoStrangeEffect = document.getElementById('autoStrangeEffect').checked;
+
+            let output = [];
+            output.push("<div class='result-text'>"); // Start of result text styling
+
+            // 1. Random Rocks
+            let mainRoll = useD24 ? rollDie(24) : rollDie(20);
+            let rockDescription = "";
+
+            if (mainRoll <= RANDOM_ROCKS_BASE_MAX_ROLL) {
+                const entry = randomRocksTable.find(item => mainRoll >= item.range[0] && mainRoll <= item.range[1]);
+                rockDescription = entry ? processTableEntry(entry, autoStrangeEffect) : "Error: Could not find rock type.";
+            } else { // Complex structure
+                let numToCombine = 2; // Default for d20 roll 18-20 or d24 roll 18-20
+                if (useD24 && mainRoll > 20) { // d24 roll 21-24
+                    numToCombine = 3;
+                }
+                rockDescription = `<strong>Complex Structure:</strong><br>${getCombinedResults(randomRocksTable, RANDOM_ROCKS_BASE_MAX_ROLL, numToCombine, autoStrangeEffect)}`;
+            }
+            output.push(`<p><strong class="result-title">Main Structure:</strong> ${rockDescription}</p>`);
+
+            // 2. Weird Runes (25% chance or forced)
+            if (forceRunes || rollDie(100) <= 25) {
+                let runeRoll = rollDie(20);
+                let runeDescription = "";
+                if (runeRoll <= WEIRD_RUNES_BASE_MAX_ROLL) {
+                    const entry = weirdRunesTable.find(item => runeRoll >= item.range[0] && runeRoll <= item.range[1]);
+                    runeDescription = entry ? processTableEntry(entry, autoStrangeEffect) : "Error: Could not find rune type.";
+                } else { // 19-20: Combine two
+                    runeDescription = `<strong>Combined Runes:</strong><br>${getCombinedResults(weirdRunesTable, WEIRD_RUNES_BASE_MAX_ROLL, 2, autoStrangeEffect)}`;
+                }
+                output.push(`<p><strong class="result-title">Weird Runes:</strong> ${runeDescription}</p>`);
+            }
+
+            // 3. Something Unusual (25% chance or forced)
+            if (forceUnusual || rollDie(100) <= 25) {
+                let unusualRoll = rollDie(20);
+                let unusualDescription = "";
+                if (unusualRoll <= SOMETHING_UNUSUAL_BASE_MAX_ROLL) {
+                    const entry = somethingUnusualTable.find(item => unusualRoll >= item.range[0] && unusualRoll <= item.range[1]);
+                    unusualDescription = entry ? processTableEntry(entry, autoStrangeEffect) : "Error: Could not find unusual feature.";
+                } else { // 19-20: Combine two
+                    unusualDescription = `<strong>Combined Unusual Features:</strong><br>${getCombinedResults(somethingUnusualTable, SOMETHING_UNUSUAL_BASE_MAX_ROLL, 2, autoStrangeEffect)}`;
+                }
+                output.push(`<p><strong class="result-title">Something Unusual:</strong> ${unusualDescription}</p>`);
+            }
+            
+            output.push("</div>"); // End of result text styling
+            document.getElementById('stoneResult').innerHTML = output.join('');
+        }
+
+        function generateBadIdea() {
+            const autoStrangeEffect = document.getElementById('autoStrangeEffect').checked; // Use the same checkbox
+            let badIdeaRoll = rollDie(20);
+            let entry = badIdeaTable.find(item => badIdeaRoll >= item.range[0] && badIdeaRoll <= item.range[1]);
+            let resultText = entry ? entry.text : "Error: Could not determine consequence.";
+
+            if (resultText.includes("{{STRANGE_EFFECT}}")) {
+                const effect = autoStrangeEffect ? `[Effect: ${generateSingleStrangeEffect()}]` : "[A Strange Effect is triggered! Roll separately or enable auto-roll.]";
+                resultText = resultText.replace("{{STRANGE_EFFECT}}", effect);
+            }
+            if (resultText.includes("{{STRANGE_EFFECT_MULTI}}")) {
+                let effects = [];
+                let numEffects = rollDie(3);
+                 for(let i=0; i<numEffects; i++){
+                    effects.push(autoStrangeEffect ? `[Effect ${i+1}: ${generateSingleStrangeEffect()}]` : `[Strange Effect ${i+1} is triggered! Roll separately or enable auto-roll.]`);
+                 }
+                resultText = resultText.replace("{{STRANGE_EFFECT_MULTI}}", effects.join("<br>"));
+            }
+
+            resultText = resultText.replace(/{{FEEBLE_CURSE}}/g, `(${getRandomElement(feebleCurses)})`);
+            resultText = resultText.replace(/{{MINOR_CURSE}}/g, `(${getRandomElement(minorCurses)})`);
+            resultText = resultText.replace(/{{MAJOR_CURSE}}/g, `(${getRandomElement(majorCurses)})`);
+            
+            if (resultText.includes("{{DIVINE_CURSE}}")) {
+                let divineCurseText = getRandomElement(divineCurses);
+                if (divineCurseText.includes("{COMPANION_CURSES}")) {
+                    let numCompanions = rollDie(6) + 1;
+                    let companionCursesList = [];
+                    for (let i = 0; i < numCompanions; i++) {
+                        companionCursesList.push(`Companion ${i+1}: ${getRandomElement(majorCurses)}`);
+                    }
+                    divineCurseText = divineCurseText.replace("{COMPANION_CURSES}", `<br>${companionCursesList.join("<br>")}`);
+                }
+                if (divineCurseText.includes("{MULTI_CURSE_DIVINE}")) {
+                    let numEach = rollDie(3);
+                    let multiCursesList = [`${numEach} Feeble Curses:`];
+                    for (let i = 0; i < numEach; i++) multiCursesList.push(`- ${getRandomElement(feebleCurses)}`);
+                    multiCursesList.push(`${numEach} Minor Curses:`);
+                    for (let i = 0; i < numEach; i++) multiCursesList.push(`- ${getRandomElement(minorCurses)}`);
+                    multiCursesList.push(`${numEach} Major Curses:`);
+                    for (let i = 0; i < numEach; i++) multiCursesList.push(`- ${getRandomElement(majorCurses)}`);
+                    divineCurseText = divineCurseText.replace("{MULTI_CURSE_DIVINE}", `<br>${multiCursesList.join("<br>")}`);
+                }
+                resultText = resultText.replace("{{DIVINE_CURSE}}", `(${divineCurseText})`);
+            }
+            
+            document.getElementById('badIdeaResult').innerHTML = `<div class='result-text'><p>${resultText}</p></div>`;
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('generateStoneButton').addEventListener('click', generateStoneSite);
+        document.getElementById('generateBadIdeaButton').addEventListener('click', generateBadIdea);
+
+        // Initial placeholder text
+        document.getElementById('stoneResult').innerHTML = "<p class='text-slate-400 italic'>Your generated stone description will appear here.</p>";
+        document.getElementById('badIdeaResult').innerHTML = "<p class='text-slate-400 italic'>The consequences of your actions will appear here.</p>";
+
+    </script>
+</body>
+</html>
