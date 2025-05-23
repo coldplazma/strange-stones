@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Dolmenwood Megalith Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif; /* More evocative font */
+            background-color: #2F3D30; /* Deep, dark forest green */
+            color: #D4CFC3; /* Aged parchment text */
+        }
+        .content-card {
+            background-color: #4A3B31; /* Dark, rich wood brown */
+            border-radius: 0.5rem;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #786254; /* Slightly lighter wood grain border */
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem; /* 6px */
+            font-weight: bold; /* Bolder font for buttons */
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-transform: uppercase; /* More archaic feel */
+            letter-spacing: 0.05em;
+        }
+        .btn-primary {
+            background-color: #6D7858; /* Mossy green */
+            color: #F0EBDD; /* Creamy white */
+            border: 1px solid #8A9A70;
+        }
+        .btn-primary:hover {
+            background-color: #586349;
+            box-shadow: 0 0 15px rgba(138, 154, 112, 0.5);
+        }
+        .btn-secondary {
+            background-color: #7D3C3C; /* Dried blood / dark berry red */
+            color: #F0EBDD;
+            border: 1px solid #9E4F4F;
+        }
+        .btn-secondary:hover {
+            background-color: #682F2F;
+            box-shadow: 0 0 15px rgba(158, 79, 79, 0.5);
+        }
+        .result-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid #5C5045; /* Darker earth border */
+            border-radius: 0.375rem;
+            background-color: #3B3028; /* Dark earth tone */
+            min-height: 150px; /* Increased min height */
+            font-size: 1.05em; /* Slightly larger result text */
+            line-height: 1.7;
+        }
+        .result-title {
+            font-weight: bold;
+            color: #A89985; /* Lighter, almost stone-like title */
+            margin-bottom: 0.75rem;
+            font-size: 1.2em;
+        }
+        .result-text p {
+            margin-bottom: 1rem;
+        }
+        .result-text strong { /* For emphasis within results */
+            color: #C0B09A; 
+            font-weight: bold;
+        }
+        .checkbox-label {
+            margin-left: 0.75rem;
+            color: #B0A090;
+            font-size: 0.95em;
+        }
+        input[type="checkbox"] {
+            border-radius: 0.25rem;
+            border: 1px solid #786254;
+            appearance: none;
+            width: 1.25em;
+            height: 1.25em;
+            background-color: #5C5045;
+            vertical-align: middle;
+            position: relative;
+        }
+        input[type="checkbox"]:checked {
+            background-color: #6D7858; /* Mossy green when checked */
+        }
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            color: #F0EBDD;
+            font-size: 0.9em;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        h1, h2 {
+            color: #E0D8CC; /* Lighter parchment for main titles */
+            font-weight: normal; /* Less harsh bold */
+        }
+        h1 {
+            font-size: 2.8em; /* Larger H1 */
+            letter-spacing: 0.02em;
+            border-bottom: 1px solid #786254;
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            font-size: 1.8em; /* Larger H2 */
+        }
+        .italic-placeholder {
+            color: #8A7A6A; /* Muted placeholder text */
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto max-w-4xl p-4 md:p-8">
+        <header class="text-center mb-10">
+            <h1 class="font-bold">Deep Dolmenwood Megalith Generator</h1>
+            <p class="text-lg text-gray-400 mt-2">Uncover the ancient secrets and primal horrors of the Wood's standing stones.</p>
+        </header>
+
+        <div class="content-card">
+            <h2 class="font-semibold mb-6">Configure Your Discovery</h2>
+            <div class="space-y-5 mb-8">
+                <div>
+                    <input type="checkbox" id="allowComplexStructures" class="rounded">
+                    <label for="allowComplexStructures" class="checkbox-label">Allow Complex/Combined Stone Structures (more features, rarer)</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="forceRunes" class="rounded">
+                    <label for="forceRunes" class="checkbox-label">Ensure the Presence of Carvings or Runes (normally ~33% chance)</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="forceUnusual" class="rounded">
+                    <label for="forceUnusual" class="checkbox-label">Ensure a Peculiar Feature or Aura (normally ~33% chance)</label>
+                </div>
+                 <div>
+                    <input type="checkbox" id="autoStrangeEffect" class="rounded" checked>
+                    <label for="autoStrangeEffect" class="checkbox-label">Automatically Detail Triggered Strange Effects</label>
+                </div>
+            </div>
+            <button id="generateStoneButton" class="btn btn-primary w-full sm:w-auto">Delve into the Dolmen</button>
+            
+            <div id="stoneResult" class="result-section">
+                <p class="italic-placeholder">The stones' form and secrets will be revealed here...</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <h2 class="font-semibold mb-6">Desecration & Consequences</h2>
+            <button id="generateBadIdeaButton" class="btn btn-secondary w-full sm:w-auto">Commit an Act of Folly</button>
+            <div id="badIdeaResult" class="result-section">
+                <p class="italic-placeholder">The Wood's retribution for such acts shall be recorded here...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const DolmenwoodGenerator = (() => {
+
+        // --- UTILITY FUNCTIONS ---
+        const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        
+        const getMultipleUniqueElements = (arr, count) => {
+            if (count >= arr.length) return [...arr]; // Return all if requesting more than available
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        };
+
+        // --- DYNAMIC CONTENT GENERATORS ---
+        // These functions produce small, variable pieces of text to be inserted into larger descriptions.
+        const dynamicContent = {
+            // Basic Shapes & Numbers
+            FLAT_STONE_SHAPE: () => getRandomElement(["roughly circular", "oval and tilted", "crudely rectangular", "triangular", "a jagged polygon", "crescent-shaped", "star-like with blunt points"]),
+            OBELISK_CROSS_SECTION: () => getRandomElement(["square", "triangular", "hexagonal", "octagonal", "rounded", "irregularly faceted"]),
+            LINTEL_STONES_COUNT: () => getRandomElement([2, 3, 4]), // Number of stones supporting a lintel
+            GEM_COUNT: () => Math.floor(Math.random() * 6) + Math.floor(Math.random() * 6) + 2, // 2d6, min 2
+            SPELL_LEVEL_EFFECT: () => getRandomElement(["a mere cantrip's worth", "of the first sphere of power", "of the second sphere", "of the third, potent sphere", "reaching to the fourth sphere"]),
+            SPELL_DURATION: () => getRandomElement(["until the next moonrise", "for a full day and night", "for three suns", "a week", "a fortnight", "a full moon's cycle", "a season and a day"]),
+            
+            // Dolmenwood Specific
+            DOLMENWOOD_MATERIAL: () => getRandomElement(["grey limestone", "moss-veined granite", "black basalt", "pockmarked chalk", "fossil-rich sandstone", "petrified oak", "knobbly bog iron", "salt-encrusted rock", "translucent crystal", "fused bone and stone", "chitinous plates hardened to rock", "compacted grave earth"]),
+            DOLMENWOOD_MOSS_TYPE: () => getRandomElement(["velvet moss", "shroud-moss", "witch-hair lichen", "goblin-gold moss", "blood-lichen", "ghost-pipe fungus", "corpse-flower moss", "star-jelly fungus"]),
+            DOLMENWOOD_OFFERING: () => getRandomElement(["a pile of shiny pebbles", "wilted wildflowers", "a string of animal teeth", "a small, carved wooden idol", "a few copper coins green with age", "a fresh bird's egg", "a lock of hair tied with sinew", "a clay tablet with crude symbols", "a bowl of soured milk", "a sacrificed dormouse", "a pouch of strange-smelling herbs", "a child's lost toy"]),
+            DOLMENWOOD_SMELL: () => getRandomElement(["damp earth and worms", "rotting leaves", "musk and wet fur", "ozone and lightning", "stagnant water", "sweet, cloying incense", "fermenting fruit", "something vaguely metallic and sharp", "brimstone", "the cold scent of ancient fear", "unsettlingly sterile air", "the aroma of baking bread, strangely"]),
+            RUNE_TRACING_SUBSTANCE: () => getRandomElement(["fresh blood (animal or humanoid)", "moon-dew", "grave dirt mixed with spit", "crushed glowing fungi", "soot and pig fat", "the juice of a nightshade berry", "tears of a penitent", "fermented honey"]),
+            DOLMENWOOD_MOON_PHASE: () => getRandomElement(["the Black Moon", "the Waxing Sliver", "the First Quarter's Eye", "the Gibbous Hump", "the Full Mad Moon", "the Waning Loss", "the Last Quarter's Hook", "the Balsamic Whisper", "the Blood Moon's Glare"]),
+            DOLMENWOOD_RITUAL_COMPONENT: () => getRandomElement(["a sprig of thrice-cursed mistletoe", "the tongue of a liar", "a still-beating spider's heart", "a mandrake root pulled at midnight", "a whisper caught in a bottle", "shadows scraped from a tomb wall", "the laughter of an innocent child (stolen)", "powdered bone of a saint (or sinner)"]),
+            DOLMENWOOD_SKY_CONDITION: () => getRandomElement(["under a starless void", "beneath the full moon's gaze", "during a raging thunderstorm", "at the precise moment of twilight", "when the aurora shimmers green and violet", "during a solar eclipse", "in a preternatural silence before a storm", "when the comets align (as they do now)"]),
+            KEY_MATERIAL_UNUSUAL: () => getRandomElement(["carved from a hanged man's femur", "forged from a fallen star", "woven from solidified moonlight", "grown from a cursed seed", "a key of living shadow", "petrified lightning", "a shard of frozen time"]),
+            DOLMENWOOD_SILENT_GUARDIAN: () => getRandomElement(["a spectral, mournful hound", "an ancient, moss-laden Mossling", "a brood of silent, watchful Grimalkin kittens", "a slumbering Barrow Wight, its dreams seeping into the soil", "a cluster of sentient, eye-like fungi that track movement", "a Woad elder, still as stone", "the disembodied sentience of a long-dead Drune", "an invisible Lacuna"]),
+            DOLMENWOOD_ELEMENTAL_SPIRIT: () => getRandomElement(["a grumbling earth elemental of local stone and roots", "a whispering air elemental carrying the scent of pine and ancient secrets", "a capricious water elemental from a nearby fetid bog or clear spring", "a flickering fire elemental that consumes only memories or shadows", "a minor genius loci, the very spirit of this blighted/hallowed spot", "a 'hunger' elemental, drawn to strong emotions", "an elemental of pure shadowstuff", "a 'sound' elemental that mimics and distorts noises"]),
+            CURRENCY_TYPE_STRANGE: () => getRandomElement(["teeth (various sizes)", "shards of obsidian", "petrified eyeballs", "moon-pennies (thin, silvery discs)", "goblin-beads (colorful, but slightly radioactive)", "finger bones", "witch-knots (intricate twine charms)"]),
+            FORGOTTEN_GOD_NAME: () => getRandomElement(["Ythogtha", "Nycrama", "Xuthal", "Ghoroth", "Umbokth", "Sligguth", "Vhoorm", "Zylac", "Pnagor", "Cthaeghya"]),
+            FAIRY_COURT_AFFILIATION: () => getRandomElement(["the Seelie Court of Summer Stars", "the Unseelie Court of Eternal Twilight", "the Ragged Court of Outcasts", "the Silent Court of the Undermorgue", "the Court of Worms", "the Gilded Court of the Sunken City"]),
+            ANCIENT_RACE: () => getRandomElement(["the Woads of Old", "the Serpent-Folk before their fall", "the First Men who spoke with trees", "the Star-Things that fell from the sky", "the Deep Dwellers who sculpted the earth", "the beings of pure sound that once sang the world into shape", "the Shadow-Weavers from beyond the veil"]),
+        };
+
+        // --- CORE DATA ARRAYS (Greatly Expanded) ---
+        // Each of these arrays will contain strings. Placeholders like {PLACEHOLDER_NAME} will be replaced.
+        
+        const stoneStructures = [
+            // Single Menhirs & Obelisks
+            "A lone, needle-thin menhir of {DOLMENWOOD_MATERIAL}, piercing the sky like a forgotten god's spear.",
+            "A massive, weathered obelisk of {DOLMENWOOD_MATERIAL}, its peak lost in the mists or canopy. It hums with a barely perceptible thrumming when {DOLMENWOOD_SKY_CONDITION}.",
+            "One squat, toad-like boulder of {DOLMENWOOD_MATERIAL}, half-buried and covered in {DOLMENWOOD_MOSS_TYPE}.",
+            "A single, perfectly smooth sphere of polished {DOLMENWOOD_MATERIAL}, about {GEM_COUNT} feet in diameter, resting in a natural depression.",
+            "A 'Tooth Stone', a jagged shard of {DOLMENWOOD_MATERIAL} thrusting from the earth at an angle, resembling a colossal fang.",
+            "A 'Watcher Stone', a tall menhir of {DOLMENWOOD_MATERIAL} with a single, large, naturally formed hole or carved eye that seems to follow you.",
+            "A 'Singing Stone', a pillar of {DOLMENWOOD_MATERIAL} that emits strange resonant tones when the wind blows from a particular direction.",
+            "A 'Weeping Stone' of {DOLMENWOOD_MATERIAL}, constantly slick with moisture that smells of {DOLMENWOOD_SMELL}, regardless of weather.",
+            "A 'Shadow Stone', an obelisk of matte black {DOLMENWOOD_MATERIAL} that seems to absorb light, its shadow unnaturally deep and cold.",
+            "A 'Lightning-Struck Stone', a splintered menhir of {DOLMENWOOD_MATERIAL}, its surface vitrified and glassy in places.",
+            "A 'Boundary Stone', marking an ancient, forgotten border, made of layered {DOLMENWOOD_MATERIAL} of different colors.",
+            "A 'Sacrifice Stone', a low, flat-topped boulder of {DOLMENWOOD_MATERIAL} with dark stains and channels carved for runoff.",
+            "A 'Dreaming Stone', a menhir of {DOLMENWOOD_MATERIAL} that, if slept against, induces vivid and often prophetic dreams of {FORGOTTEN_GOD_NAME}.",
+
+            // Stone Circles & Arrangements
+            "A small, tight circle of {GEM_COUNT} child-sized stones of {DOLMENWOOD_MATERIAL}, their tops worn smooth.",
+            "A wide, sparse circle of {GEM_COUNT} massive, rough-hewn menhirs of {DOLMENWOOD_MATERIAL}, some leaning precariously.",
+            "A double concentric circle of {DOLMENWOOD_MATERIAL} stones, the inner ring taller and more ornate than the outer.",
+            "A 'Spiral Henge', where stones of decreasing size made of {DOLMENWOOD_MATERIAL} form a tightening spiral towards a central altar stone.",
+            "A 'Serpent Circle', an oval arrangement of undulating {DOLMENWOOD_MATERIAL} stones that resemble the coils of a vast snake.",
+            "An 'Avenue of Whispers', two parallel rows of {GEM_COUNT} pairs of {DOLMENWOOD_MATERIAL} stones leading towards a now-vanished focal point. Voices echo strangely here.",
+            "A 'Fallen Circle', where most of the {DOLMENWOOD_MATERIAL} stones are toppled and half-swallowed by the earth, their original configuration a puzzle.",
+            "A 'Celestial Alignator', a complex arrangement of {DOLMENWOOD_MATERIAL} markers and sighting stones, clearly designed for astronomical observation of the {DOLMENWOOD_MOON_PHASE} or specific stars.",
+            "A 'Dancing Circle', where stones of {DOLMENWOOD_MATERIAL} are oddly angled and seem to be captured mid-motion, as if frozen during a ritual dance.",
+            "A 'Council Ring', a circle of {GEM_COUNT} flat-topped {DOLMENWOOD_MATERIAL} stones suitable for seating, facing a larger 'throne' stone.",
+            "A 'Gateway Circle', where {LINTEL_STONES_COUNT} pairs of stones topped with lintels form archways at cardinal points around a central open space.",
+            "A 'Labyrinth Circle', low walls of {DOLMENWOOD_MATERIAL} forming a confusing maze that leads to a central menhir.",
+            "A 'Moon Dial Circle', where shadows cast by a central gnomon of {DOLMENWOOD_MATERIAL} fall upon marked peripheral stones, indicating something other than time.",
+
+            // Dolmens, Cairns & Barrows
+            "A simple dolmen: two upright slabs of {DOLMENWOOD_MATERIAL} supporting a massive, rough capstone. The space beneath smells of {DOLMENWOOD_SMELL}.",
+            "A 'Giant's Table', an enormous capstone of {DOLMENWOOD_MATERIAL} resting on {LINTEL_STONES_COUNT} sturdy pillars, high enough to walk under.",
+            "A 'Whispering Barrow', a long barrow mound faced with {DOLMENWOOD_MATERIAL} kerbstones, its entrance sealed by a single, carved plug-stone. Faint whispers can be heard from within.",
+            "A collapsed passage grave, its {DOLMENWOOD_MATERIAL} roof-slabs caved in, revealing glimpses of a dark, earth-filled chamber.",
+            "A large, round cairn of smaller {DOLMENWOOD_MATERIAL} rocks, crowned with a single, larger menhir. It might contain a kistvaen.",
+            "A 'Holed Dolmen', where the entrance slab has a perfectly circular hole, just large enough for a person to squeeze through, or for offerings to {FORGOTTEN_GOD_NAME}.",
+            "A 'Tiered Cairn', several layers of stone platforms made of {DOLMENWOOD_MATERIAL}, decreasing in size, forming a step-pyramid like structure.",
+            "A 'Bone Dolmen', where the supporting stones are intermixed with or appear to be giant, fossilized bones, capped with {DOLMENWOOD_MATERIAL}.",
+            "A 'Singing Cairn', a hollow cairn of {DOLMENWOOD_MATERIAL} constructed so that wind passing through creates an eerie, fluting melody.",
+            "An 'Effigy Barrow', a long barrow shaped like a {DOLMENWOOD_SILENT_GUARDIAN}, outlined with {DOLMENWOOD_MATERIAL} stones.",
+
+            // Natural Formations (or seemingly so)
+            "A 'Rocking Stone', a massive boulder of {DOLMENWOOD_MATERIAL} so perfectly balanced it can be rocked by a single person, yet never topples.",
+            "A 'Toadstool Cluster', several large, mushroom-shaped outcrops of {DOLMENWOOD_MATERIAL}, naturally eroded or magically shaped.",
+            "An exposed bedrock platform of {DOLMENWOOD_MATERIAL}, etched with deep, natural-looking fissures that form a recognizable, unsettling pattern when viewed from above.",
+            "A 'Stone Tree Grove', where pillars of {DOLMENWOOD_MATERIAL} resemble petrified tree trunks, some even having branch-like protrusions.",
+            "A 'Gorgon's Garden', an area filled with unsettlingly life-like statues of creatures and people, seemingly made of native {DOLMENWOOD_MATERIAL}, possibly victims of a petrifying entity.",
+            "A 'Dragon's Spine', a long, serrated ridge of {DOLMENWOOD_MATERIAL} vertebrae-like stones protruding from the earth.",
+            "A 'Witch's Kitchen', a chaotic jumble of {DOLMENWOOD_MATERIAL} boulders and slabs forming small caves and overhangs, often used by local hedge-witches.",
+            "A 'Fairy Bath', a natural basin in a large {DOLMENWOOD_MATERIAL} boulder, always filled with clear water, even in drought. Said to be used by the {FAIRY_COURT_AFFILIATION}.",
+            "An 'Echo Rock', a concave formation of {DOLMENWOOD_MATERIAL} that reflects sounds in bizarre and unpredictable ways, sometimes whispering secrets or future echoes.",
+        ];
+
+        const weirdRunes = [
+            // Simple & Worn
+            "Faint, almost illegible scratches on the {DOLMENWOOD_MATERIAL}, worn by centuries of wind and rain. They might be the work of {ANCIENT_RACE} or just natural markings.",
+            "A single, deeply carved symbol resembling a {DOLMENWOOD_SILENT_GUARDIAN} or a stylized {DOLMENWOOD_MOON_PHASE}.",
+            "Patches of {DOLMENWOOD_MOSS_TYPE} that grow in rune-like patterns across the {DOLMENWOOD_MATERIAL}.",
+            "Crudely pecked depressions forming a repeating geometric pattern: spirals, chevrons, or dots.",
+            "The stone is covered in what looks like children's handprints, but they are cold to the touch and made of {RUNE_TRACING_SUBSTANCE}.",
+            "Ancient graffiti in a forgotten script, likely warnings or boasts from a long-dead {ANCIENT_RACE} chieftain.",
+            "Text so worn that only a few words are legible: '...beware the eye...', '...sleeps below...', '...offer {DOLMENWOOD_OFFERING}...'.",
+            "Shallowly incised lines forming a map of the local area, but with several locations that no longer exist or are hidden in Fairy.",
+            "Symbols that seem to change subtly when not directly observed, or that rearrange themselves between visits.",
+
+            // Magical & Active Runes
+            "Glowing runes in an unknown language that pulse with faint {DOLMENWOOD_MOSS_TYPE}-colored light, especially under the {DOLMENWOOD_MOON_PHASE}. Touching them with {RUNE_TRACING_SUBSTANCE} triggers {{STRANGE_EFFECT}}.",
+            "Runes that appear only when wet, or when blood is spilled upon the stone. They speak of {FORGOTTEN_GOD_NAME} and trigger {{STRANGE_EFFECT}}.",
+            "Ice-cold runes etched into the {DOLMENWOOD_MATERIAL}, possibly Sylvan script. They describe a pact with the {FAIRY_COURT_AFFILIATION} and trigger {{STRANGE_EFFECT}} if read aloud by one of noble fey blood.",
+            "Drunic script that, if traced with a finger dipped in {RUNE_TRACING_SUBSTANCE}, animates the nearby shadows, causing them to dance or menace before triggering {{STRANGE_EFFECT}}.",
+            "Glyphs that seem to writhe like serpents. Staring at them for too long can cause dizziness and minor hallucinations, and eventually triggers {{STRANGE_EFFECT}}.",
+            "A complex circular diagram filled with arcane symbols and astrological conjunctions. Understanding its meaning (INT check DC 18) allows one to trigger {{STRANGE_EFFECT}} at will once per {SPELL_DURATION}.",
+            "Runes that inflict searing pain if touched by bare flesh (1d4 psychic damage), but grant a vision or trigger {{STRANGE_EFFECT}} if touched with an iron tool.",
+            "A palimpsest of carvings, layers upon layers of different scripts from various eras. The oldest layer, barely visible, hints at the stones' true purpose by the {ANCIENT_RACE} and triggers {{STRANGE_EFFECT}} if deciphered.",
+            "Runes that are actually colonies of tiny, phosphorescent insects or fungi, forming shifting patterns. Disturbing them triggers {{STRANGE_EFFECT}}.",
+            "The 'Runes of Silence': attempting to read them aloud causes the speaker to become mute for 1d6 hours, but they understand the meaning perfectly, which details how to trigger {{STRANGE_EFFECT}} through gesture.",
+            "A single, powerful glyph that acts as a key. If its 'name' (a specific word or sound) is spoken, the stone shimmers and {{STRANGE_EFFECT}} occurs.",
+
+            // Depictions & Scenes
+            "Elaborate knotwork carvings depicting intertwined thorny vines, monstrous faces, and celestial bodies, typical of ancient {ANCIENT_RACE} artistry.",
+            "A frieze showing a procession of cloaked figures (possibly Drunes) approaching a similar stone site, bearing {DOLMENWOOD_OFFERING}.",
+            "Crudely carved images of local beasts (deer, boar, wolves) alongside fantastical creatures (Goatmen, Grimalkin, Attercops).",
+            "A hunting scene, where oversized humanoids (Giants or Woad heroes) pursue colossal beasts that no longer roam Dolmenwood.",
+            "A star map unlike any seen in the current night sky, perhaps from a different age or world. Tracing a specific constellation triggers {{STRANGE_EFFECT}}.",
+            "A genealogical chart of a forgotten royal line of the {FAIRY_COURT_AFFILIATION}, their names intertwined with symbols of power and tragedy.",
+            "Instructions for a complex ritual involving {DOLMENWOOD_RITUAL_COMPONENT}, chanting under the {DOLMENWOOD_SKY_CONDITION}, and interaction with a {DOLMENWOOD_ELEMENTAL_SPIRIT} to trigger {{STRANGE_EFFECT}}.",
+            "A depiction of a great battle between the forces of the Nag-Lord and the fyrds of Men, or perhaps the Cold Prince's hosts.",
+            "Carvings that tell a story in pictograms, detailing the life of a local hero or the binding of a terrible {DOLMENWOOD_SILENT_GUARDIAN} beneath the stones.",
+            "Abstract symbols that evoke strong emotions when focused upon: dread, sorrow, ecstasy, or primal fear. Meditating on one for 10 minutes triggers {{STRANGE_EFFECT}}.",
+            "A 'witch-mark' or sigil of a known (or unknown) coven, claiming this site as their territory.",
+        ];
+
+        const somethingUnusual = [
+            // Sensory Oddities
+            "The air around the stones is डिग्री {GEM_COUNT} colder/warmer than the surrounding woods, and smells faintly of {DOLMENWOOD_SMELL}.",
+            "A constant, low hum or thrumming vibration emanates from the stones, felt more in the bones than heard.",
+            "Whispers in an unknown tongue ({ANCIENT_RACE} language?) seem to drift from the stones when no one is looking directly at them.",
+            "The stones distort sound: voices are amplified, deadened, or echo with unnatural resonance. Sometimes, words spoken nearby are repeated later by the stones themselves.",
+            "Looking at the stones for too long makes the vision swim, or causes faint geometric patterns to overlay everything.",
+            "The {DOLMENWOOD_MATERIAL} of the stones is unnaturally smooth and warm, like living flesh, or conversely, jagged and colder than ice.",
+            "A patch of {DOLMENWOOD_MOSS_TYPE} on one stone slowly pulses with a faint, internal luminescence.",
+            "The stones cast no shadows, or their shadows fall in the wrong direction, or are shaped like something else entirely (e.g. a {DOLMENWOOD_SILENT_GUARDIAN}).",
+            "Touching the stones leaves a residue on the skin: fine dust, sticky sap, or an oily film that smells of {DOLMENWOOD_SMELL}.",
+            "The stones are magnetic, or repel specific metals like iron or silver.",
+
+            // Flora, Fauna, & Growths
+            "A rare, possibly sentient species of {DOLMENWOOD_MOSS_TYPE} or luminous fungus grows only on these stones and nowhere else in this hex.",
+            "Swarms of unusual insects (e.g., bone-white moths, iridescent beetles, silent flies) constantly crawl over or fly around the stones.",
+            "The stones are hollow and serve as the hive for wild bees producing hallucinogenic honey, or a den for a reclusive {DOLMENWOOD_SILENT_GUARDIAN}.",
+            "Vines with {GEM_COUNT} metallic-looking thorns grow exclusively on these stones, constricting them like serpents. The vines sometimes twitch.",
+            "Small, perfectly spherical stones ({GEM_COUNT} of them) like 'eggs' are nestled at the base of the main structure, made of a different {DOLMENWOOD_MATERIAL}.",
+            "The stones are encrusted with barnacle-like growths that are actually the dormant state of a strange, crystalline creature.",
+            "A tree grows directly through one of the stones, its wood fused with the {DOLMENWOOD_MATERIAL} in an unnatural symbiosis.",
+            "The ground around the stones is barren in a perfect circle, or conversely, unnaturally fertile, sprouting strange, vibrant flora.",
+
+            // Physical & Magical Phenomena
+            "One or more stones float a few inches above the ground, held by an unseen force. Pushing them causes them to gently bob.",
+            "The stones are arranged in a non-Euclidean manner that subtly confuses the senses and makes accurate measurement difficult.",
+            "A hidden seam or keyhole (requiring a key of {KEY_MATERIAL_UNUSUAL}) suggests a compartment or mechanism within the largest stone. Finding it (Perception DC 20) and opening it triggers {{STRANGE_EFFECT}}.",
+            "The stones are made of an impossible material: solidified smoke, petrified light, woven shadowstuff, or a metal unknown to mortal smiths.",
+            "Water poured onto the stones sizzles and evaporates instantly, or freezes solid, regardless of ambient temperature.",
+            "Illusory images flicker around the stones: scenes from the past, glimpses of Fairy, or terrifying visages of {FORGOTTEN_GOD_NAME}.",
+            "The stones are a focal point for a minor elemental disturbance: constant breezes, small earth tremors, or a perpetual drizzle in their immediate vicinity.",
+            "A small, shimmering portal to a tiny demi-plane (a single chamber, a strange garden) or a random location in Fairy (High Wold or Deep Wold) flickers in and out of existence between two of the stones under the {DOLMENWOOD_MOON_PHASE}. Entering it triggers {{STRANGE_EFFECT}}.",
+            "The stones possess a weak sentience. They can communicate through emotions, vague images projected into minds, or by subtly altering their temperature or the patterns of {DOLMENWOOD_MOSS_TYPE} upon them. A successful Wisdom (Insight) DC 15 check might understand a simple message, and could trigger {{STRANGE_EFFECT}}.",
+            "Embedded within one stone is a trapped {DOLMENWOOD_ELEMENTAL_SPIRIT} or the bound soul of an ancient {ANCIENT_RACE} shaman. Freeing it (complex task) triggers {{STRANGE_EFFECT}}.",
+            "The stones absorb or redirect magical energy. Spells cast near them might be dampened, amplified, or have unpredictable side-effects. One such side effect is {{STRANGE_EFFECT}}.",
+            "A face, or multiple faces, can sometimes be seen within the grain of the {DOLMENWOOD_MATERIAL}, their expressions shifting with the light or the viewer's mood. One seems to try and speak, triggering {{STRANGE_EFFECT}} if 'listened' to.",
+        ];
+
+        const strangeEffects = [
+            // Sensory & Mental
+            "All within 30ft gain 'Spirit-Sight' for {SPELL_DURATION}, able to see invisible creatures, spirits, and echoes of the recently departed.",
+            "The triggerer's mind is flooded with a torrent of images: the entire history of this stone site in a dizzying flash. Make a Wisdom save (DC 14) or be stunned for 1d10 minutes. On a success, gain one piece of useful lore about the {ANCIENT_RACE} or {FORGOTTEN_GOD_NAME} associated with it.",
+            "A wave of profound peace washes over all within 60ft. All feel a sense of oneness with Dolmenwood. Gain advantage on Wisdom (Survival) checks in forests for {GEM_COUNT} days.",
+            "The triggerer's voice changes for {SPELL_DURATION}, becoming a chorus of whispers or the booming voice of a {DOLMENWOOD_SILENT_GUARDIAN}. Advantage on Intimidation, disadvantage on Deception.",
+            "A geas is subtly implanted: The triggerer feels a compulsion to bring a specific {DOLMENWOOD_OFFERING} to another named stone circle within {GEM_COUNT} hexes. Resisting causes increasing anxiety (disadvantage on INT and WIS checks).",
+            "The triggerer can speak with a specific type of animal (e.g., ravens, wolves, spiders, goats) for {SPELL_DURATION} as per the Speak with Animals spell.",
+            "All within 30ft are affected by an 'Emotion Aura'. Roll 1d6: 1=Fear, 2=Joy, 3=Sorrow, 4=Rage, 5=Apathy, 6=Lust. Lasts {GEM_COUNT} minutes.",
+            "The triggerer gains temporary knowledge of a specific ritual which, if performed here under the {DOLMENWOOD_MOON_PHASE} with {DOLMENWOOD_RITUAL_COMPONENT}, will summon a {DOLMENWOOD_ELEMENTAL_SPIRIT} or contact an entity from the {FAIRY_COURT_AFFILIATION}.",
+            "A hidden truth about a companion or a recent event is psychically revealed to the triggerer.",
+            "The stones 'sing' a song only the triggerer can hear, a melody that will haunt their dreams and grant inspiration (advantage on one artistic or creative skill check within {GEM_COUNT} days).",
+
+            // Physical & Transformative
+            "The triggerer's skin temporarily takes on the texture and toughness of {DOLMENWOOD_MATERIAL} (AC +2) for {GEM_COUNT} hours.",
+            "A shower of shimmering {DOLMENWOOD_MOSS_TYPE}-colored motes heals the triggerer and allies within 30ft for {GEM_COUNT}d4 hit points each.",
+            "The triggerer is polymorphed into a random (mostly harmless) Dolmenwood creature (e.g., a large toad, a raven, a fat dormouse, a goat kid) for {GEM_COUNT} minutes. They retain their mind.",
+            "All within 30ft are teleported {GEM_COUNT}00 feet in a random direction, possibly into danger or a hidden glade.",
+            "The triggerer's primary weapon becomes wreathed in cold, {DOLMENWOOD_MOSS_TYPE}-green flame for {SPELL_DURATION}, dealing an extra 1d6 cold or necrotic damage.",
+            "A spectral guardian, looking like an ancient warrior of the {ANCIENT_RACE}, appears and will defend the triggerer from the next hostile creature that attacks them, then vanishes.",
+            "The triggerer sprouts temporary, cosmetic fey features (pointed ears, antlers, shimmering skin) that last for {SPELL_DURATION} and attract attention from fey.",
+            "A small, animate twig-figure detaches itself from a nearby plant and becomes a loyal, if fragile, companion for {GEM_COUNT} days. It understands simple commands.",
+            "The stones create {GEM_COUNT} rations of strange but nourishing 'fairy food' (e.g., glowing mushrooms, bread that tastes of sunlight, berries that induce euphoria). Consuming it may have minor side effects (roll on Feeble Curses Dolmenwood, but interpret as quirky, not necessarily negative).",
+            "The triggerer gains the ability to meld into stone or wood (like the spell) once within the next {SPELL_DURATION}.",
+
+            // Magical & Planar
+            "A gateway to a random (but relatively safe) location in the High Wold or a peculiar corner of Fairy opens and remains stable for {GEM_COUNT} minutes.",
+            "The triggerer can cast one thematically appropriate spell of {SPELL_LEVEL_EFFECT} (e.g., Entangle, Faerie Fire, Protection from Evil/Good, Speak with Plants) once within the next hour, without components.",
+            "An anti-magic field (10ft radius) centers on the stone structure for {GEM_COUNT} minutes, nullifying all active spells and preventing new ones.",
+            "A friendly (or mischievous) {DOLMENWOOD_ELEMENTAL_SPIRIT} is summoned and will perform one minor service before departing.",
+            "The stones act as a 'Lie Detector'. For the next hour, anyone speaking a deliberate untruth within 10ft of the stones causes them to glow faintly red.",
+            "The triggerer is 'marked' as a friend of the {FAIRY_COURT_AFFILIATION} (or an enemy of a rival court). This may bring unexpected aid or trouble later.",
+            "A random object carried by the triggerer becomes enchanted with a minor, quirky property (e.g., a cloak that billows dramatically on command, boots that leave no tracks on grass, a cup that always fills with pure water).",
+            "The stones grant a 'Sanctuary' effect (as spell) to the triggerer, lasting for {GEM_COUNT} rounds against creatures of the Wood or fey.",
+            "Time within a 20ft radius of the stones becomes distorted for {GEM_COUNT} minutes: it might speed up, slow down, or loop briefly.",
+            
+            // Curses (as direct effects)
+            "A feeble curse of {{FEEBLE_CURSE_DOLMENWOOD}} is bestowed upon the triggerer.",
+            "A minor curse of {{MINOR_CURSE_DOLMENWOOD}} afflicts the triggerer.",
+            "A major curse of {{MAJOR_CURSE_DOLMENWOOD}} befalls the triggerer, marking them for misfortune.",
+
+            // Special: Double Effect
+            "The air crackles! Two distinct strange effects occur: {{STRANGE_EFFECT_RECURSIVE}} AND {{STRANGE_EFFECT_RECURSIVE}}" // Recursive placeholder handled in logic
+        ];
+        // Add more strange effects... (at least 20-30 more would be good for "triple")
+        strangeEffects.push(...[
+            "The triggerer's shadow detaches and acts independently for {SPELL_DURATION}, attempting to perform mischievous (but not overly harmful) acts.",
+            "For {GEM_COUNT} hours, the triggerer can understand the 'language' of the wind in Dolmenwood, which whispers secrets, warnings, and lies.",
+            "A sudden, localized downpour of sweet-smelling rain occurs, washing away grime and granting advantage on the next save vs. poison or disease to all within 30ft.",
+            "The stones offer a cryptic prophecy concerning the triggerer's immediate future, usually involving a choice between two undesirable outcomes.",
+            "The triggerer gains the ability to walk on water (or bog surfaces) as if it were solid ground for {SPELL_DURATION}.",
+            "A swarm of beautiful, harmless butterflies made of pure light erupts from the stones, circles the party, and then dissipates, leaving behind {GEM_COUNT} {CURRENCY_TYPE_STRANGE}.",
+            "The next ranged attack made by the triggerer unerringly hits its mark (if within range), guided by unseen forces.",
+            "The triggerer feels an empathic link to the stones; they can sense if the stones are disturbed or damaged from up to a mile away for {GEM_COUNT} days.",
+            "A ghostly image of a figure from the {ANCIENT_RACE} appears, nods sagely at the triggerer, points in a significant direction, and fades.",
+            "The triggerer's hair and eyes change color to match the dominant {DOLMENWOOD_MOSS_TYPE} or {DOLMENWOOD_MATERIAL} of the stones for {SPELL_DURATION}. This is purely cosmetic but may unnerve locals.",
+            "All non-magical fires within 100 feet are instantly extinguished, and new ones cannot be lit by mundane means for {GEM_COUNT} minutes.",
+            "The triggerer gains advantage on all Charisma checks when interacting with creatures of the {FAIRY_COURT_AFFILIATION} for {GEM_COUNT} days.",
+            "A spectral instrument (harp, flute, drum) appears and plays a haunting melody for {GEM_COUNT} minutes. All who listen must make a DC 12 Wisdom save or be charmed by the music, unwilling to act aggressively.",
+            "The ground beneath the triggerer's feet becomes momentarily like quicksand, requiring a DC 13 Dexterity save to avoid falling prone.",
+            "The triggerer's name is temporarily 'erased'. For {GEM_COUNT} hours, creatures have difficulty remembering it or addressing them by it. This confuses magical effects that target by name.",
+            "A single, perfect fruit or vegetable grows instantly from the earth at the foot of the stone. Eating it grants the benefits of a Potion of Healing ({GEM_COUNT}d4+ {GEM_COUNT} HP).",
+            "The triggerer becomes invisible (as spell) for {GEM_COUNT} rounds.",
+            "The stones whisper a command word that, when spoken by the triggerer, will cause one of the stones to shed bright light in a 30ft radius for 1 hour. This can be done {LINTEL_STONES_COUNT} times.",
+            "For {SPELL_DURATION}, the triggerer can see the 'ley lines' or paths of magical energy that crisscross Dolmenwood, potentially leading to other sites of power.",
+            "The triggerer is blessed (as spell) for {GEM_COUNT} minutes."
+        ]);
+
+
+        const badIdeaConsequences = [
+            // Minor Retributions
+            "A wave of nausea washes over the defiler; disadvantage on next d20 roll. The stones seem to darken.",
+            "The defiler's hands tremble uncontrollably for {GEM_COUNT} minutes; any action requiring fine motor skills is at disadvantage.",
+            "A swarm of biting flies, seemingly from nowhere, harries the defiler for {GEM_COUNT} rounds (disadvantage on concentration checks).",
+            "The defiler is afflicted with {{FEEBLE_CURSE_DOLMENWOOD}}. The air grows cold.",
+            "The defiler's rations spoil instantly. Any food they carry tastes of ash and {DOLMENWOOD_SMELL} for {GEM_COUNT} days.",
+            "A nearby tree branch cracks and falls, narrowly missing the defiler (DC 12 Dex save to avoid 1d6 bludgeoning damage).",
+            "The defiler hears the mocking laughter of unseen fey. They gain a new Flaw: 'Easily spooked by sounds in the woods'.",
+            "One of the defiler's mundane items (e.g., tinderbox, waterskin, rope) breaks or vanishes.",
+            "The stones unleash one final, minor {{STRANGE_EFFECT}}, but it targets the defiler with a negative twist if possible.",
+            "The defiler feels a deep chill and is marked; creatures of the {FAIRY_COURT_AFFILIATION} (Unseelie-aligned) will view them with disfavor.",
+
+            // Moderate Retributions
+            "The defiler is afflicted with {{MINOR_CURSE_DOLMENWOOD}}. A low groan echoes from the earth.",
+            "The stones unleash 1d2 strange effects {{STRANGE_EFFECT_MULTI_BAD_IDEA}}, but they are corrupted or twisted, affecting the defiler or party negatively.",
+            "A spectral guardian ({DOLMENWOOD_SILENT_GUARDIAN}) manifests from the stone and attacks the defiler, then vanishes after {GEM_COUNT} rounds or if significantly damaged.",
+            "The defiler is teleported {GEM_COUNT} x 100 feet into the deepest, darkest part of the current hex, alone.",
+            "All allies of the defiler within 30 feet suffer disadvantage on their next saving throw as the Wood's displeasure spreads.",
+            "The defiler is struck temporarily blind or deaf (50/50 chance) for {GEM_COUNT} hours.",
+            "A valuable item belonging to the defiler (GM's choice, possibly magical if minor) crumbles to dust or turns to {DOLMENWOOD_MATERIAL}.",
+            "The defiler is marked by a magical sigil (visible only to those with witch-sight or fey) that screams 'Desecrator!' This attracts unwanted attention from Drunes, Witches, or powerful fey.",
+            "The defiler is overcome with a powerful paranoia for {GEM_COUNT} hours, believing their companions are plotting against them (Wisdom save DC 14 to resist acting on it).",
+
+            // Severe Retributions
+            "The defiler is afflicted with {{MAJOR_CURSE_DOLMENWOOD}}. The sky darkens, and a storm seems to gather overhead.",
+            "The stones erupt with power! 1d3 strange effects {{STRANGE_EFFECT_MULTI_BAD_IDEA}} lash out, all twisted to be harmful and targeting the defiler's group.",
+            "A powerful entity ({FORGOTTEN_GOD_NAME}'s avatar, a Lord of the {FAIRY_COURT_AFFILIATION}, or an ancient {DOLMENWOOD_ELEMENTAL_SPIRIT}) is enraged. It delivers a scathing rebuke and inflicts a quest of penance upon the defiler, with dire consequences for failure.",
+            "The defiler's soul is momentarily tethered to the stone. They suffer 1d4 levels of exhaustion and cannot regain hit points by resting until they make atonement (GM determines what this means).",
+            "The defiler is polymorphed into a grotesque parody of a {DOLMENWOOD_SILENT_GUARDIAN} for {GEM_COUNT} days, barely retaining their sanity.",
+            "The stones drain a portion of the defiler's life force. They permanently lose {LINTEL_STONES_COUNT} hit points from their maximum.",
+            "The defiler is afflicted with {{DIVINE_CURSE_DOLMENWOOD}}. The very fabric of reality around the stones seems to recoil from their actions.",
+            "The desecrated stone crumbles to dust. A powerful, ancient ward is broken. Something terrible that was bound here is now free, and it knows who released it.",
+            "All within 100 yards are subjected to {{MINOR_CURSE_DOLMENWOOD}}, while the defiler suffers {{MAJOR_CURSE_DOLMENWOOD}}. The ground trembles.",
+            "Nothing happens immediately... but the defiler is now hunted by a relentless agent of the stones' original creators ({ANCIENT_RACE} revenant, fey champion, Drune assassin).",
+            "The defiler's name is stricken from the 'annals of the Wood'. For {GEM_COUNT} weeks, they find that paths twist away from them, shelter is hard to find, and animals instinctively fear or hate them. Mundane survival becomes incredibly difficult in Dolmenwood."
+        ];
+        // Add more consequences... (at least 20-30 more for "triple")
+        badIdeaConsequences.push(...[
+            "The defiler's shadow becomes animate and hostile for {GEM_COUNT} hours, attempting to hinder and betray them (treat as a separate entity with 1 HP that can cause disadvantage on actions).",
+            "The defiler develops an allergy to a common Dolmenwood plant (e.g., moss, pine needles, a specific flower), causing severe itching and sneezing if near it.",
+            "All magical effects currently benefiting the defiler are instantly dispelled.",
+            "The defiler loses the ability to speak or understand one language they know (randomly determined) for {GEM_COUNT} days.",
+            "A ghostly image of the defiler's ancestor appears, looking deeply disappointed, before fading.",
+            "The defiler's reflection now always appears distorted or monstrous.",
+            "The defiler is compelled to loudly confess their transgression to the next authority figure they meet.",
+            "The stones 'brand' the defiler with a mark that is intensely painful if they attempt to lie for the next {GEM_COUNT} days (1 psychic damage per lie).",
+            "The defiler finds that all their maps of Dolmenwood become inaccurate, routes shifting and landmarks vanishing.",
+            "A minor fey trickster is bound to the defiler, playing irritating pranks (hiding small items, tying shoelaces together, mimicking voices) for {GEM_COUNT} weeks or until placated with a specific {DOLMENWOOD_OFFERING}.",
+            "The defiler's weapon becomes cursed, imposing disadvantage on attack rolls until purified at another sacred (or profane) site.",
+            "The defiler is haunted by vivid nightmares of being trapped within the cold, unyielding stone for {GEM_COUNT} nights, gaining one level of exhaustion each morning they fail a DC 12 Wisdom save.",
+            "The defiler attracts bad luck: for the next {GEM_COUNT} hours, any time they roll a natural 1 on a d20, the GM can introduce an additional minor complication.",
+            "The defiler's appearance subtly changes to resemble a reviled creature of Dolmenwood (e.g., slight goat-like eyes, a patch of fungal skin, an insectoid chitter in their speech). This imposes disadvantage on social interactions with most normal folk.",
+            "The stones cry out in a chorus of pained voices, audible for a mile. This may attract unwanted attention from whatever lurks nearby.",
+            "The defiler is cursed to only be able to consume rotten food or stagnant water for {GEM_COUNT} days. Fresh provisions taste like ash to them.",
+            "The defiler becomes a beacon for lost souls or minor, sorrowful spirits, who follow them around, their faint whispers and cold presence unnerving others.",
+            "The defiler loses {GEM_COUNT}d10 {CURRENCY_TYPE_STRANGE} or an equivalent value in mundane coins, which fall from their pockets and vanish into cracks in the earth.",
+            "The defiler’s mount (if any) becomes spooked and bolts, or any nearby pack animals refuse to approach them.",
+            "A specific type of weather (rain, fog, oppressive heat) now seems to follow the defiler for {GEM_COUNT} days, localized to their immediate area."
+        ]);
+
+
+        // Curse Tables (Now just single arrays to pick from)
+        const feebleCursesDolmenwood = [
+            "Hair turns vibrant {DOLMENWOOD_MOSS_TYPE} green and smells of {DOLMENWOOD_SMELL}.", "Develops an unnerving craving for insects, grave dirt, or {DOLMENWOOD_OFFERING}.",
+            "All food and drink tastes faintly of {DOLMENWOOD_SMELL} for 1d6 days.", "Skin becomes clammy and pale, like a fish belly or a slug.",
+            "Miss next attack due to a sudden swarm of spectral {DOLMENWOOD_SILENT_GUARDIAN}-shaped flies only you can see.", "Next spell cast is accompanied by the bleating of a goat or the screech of an owl.",
+            "Roll 1d20 under Dex when moving through undergrowth to avoid becoming hopelessly entangled for 1 round.", "Gradually develops small, harmless fungal growths on the skin, resembling {DOLMENWOOD_MOSS_TYPE}.",
+            "Becomes a magnet for bad weather (localized drizzle or unsettling fog follows you).", "Small woodland creatures (squirrels, birds, frogs) become actively hostile and try to hinder you (tripping, stealing small items).",
+            "-1 penalty on all d20 rolls until the next {DOLMENWOOD_MOON_PHASE}.", "Grow a small, non-functional pair of deer antlers or goat horns (cosmetic, sheds after 1d4 weeks).",
+            "Your shadow sometimes lags a second behind your movements.", "You occasionally hear the faint sound of {FORGOTTEN_GOD_NAME} being whispered.",
+            "You find tiny twigs and leaves in your pockets and hair, no matter how often you clean them.", "You must speak with a slight, unsettling lisp or stutter for {GEM_COUNT} days.",
+            "You develop a nervous tic, like an eye twitch or incessant finger tapping, for {GEM_COUNT} days.", "Your presence makes milk curdle and bread go stale faster.",
+            "You become convinced that a particular, common type of plant (e.g., ferns, daisies) is spying on you.", "You get an irresistible urge to collect mundane items like smooth stones or bird feathers.",
+            "Your fingernails and toenails grow at twice the normal rate and are the color of {DOLMENWOOD_MATERIAL}."
+        ];
+
+        const minorCursesDolmenwood = [
+            "Disadvantage on all saves vs. illusions or charms from creatures of the {FAIRY_COURT_AFFILIATION}.", "Disadvantage on all attack rolls against beasts native to Dolmenwood.",
+            "Disadvantage on all social rolls with common folk of Dolmenwood (they sense something 'off').", "Marked: You attract the unwanted attention of a specific type of Dolmenwood predator (e.g., Woads, Grimalkin, a hungry Troll, Attercops).",
+            "All rations spoil twice as fast and attract swarms of {DOLMENWOOD_SMELL}-scented flies.", "Cannot light a fire by mundane means (magical fire is okay, but flickers sickly and provides little warmth).",
+            "Must speak in rhymes or riddles when addressing fey creatures, or suffer a splitting headache (1 psychic damage).", "All spells you cast have a 25% chance of summoning 1d4 mischievous (but not directly harmful) sprites that cause minor annoyances for an hour.",
+            "Your shadow detaches and occasionally plays mean-spirited pranks (e.g., tripping you, hiding small items, making obscene gestures).", "Wounds heal at half rate; healing magic is only 75% effective. Scars take on a thorny, vine-like appearance.",
+            "You are constantly followed by the faint sound of discordant pipes or a mournful flute, audible only to you and animals, driving you to distraction (disadvantage on concentration checks).",
+            "Cannot willingly leave the current hex of Dolmenwood for 1d4 days without becoming utterly lost, even with a guide.", "You develop a phobia of a common Dolmenwood feature (e.g., running water, old trees, the {DOLMENWOOD_MOON_PHASE}).",
+            "You become intensely jealous of one of your companions' possessions or abilities.", "Animals can understand your speech, but they universally dislike what you have to say and react negatively.",
+            "You must make a DC 10 Wisdom save each morning or be compelled to perform a strange, pointless ritual (e.g., walk backwards for an hour, paint your face with mud, speak only to trees).",
+            "Any time you tell a lie, small, harmless {DOLMENWOOD_MOSS_TYPE} sprouts from your tongue (falls off after a minute).", "You lose your sense of direction when not under direct sunlight or moonlight.",
+            "You are compelled to leave a small {DOLMENWOOD_OFFERING} whenever you pass a significant natural landmark.", "You become invisible to a specific, common type of creature (e.g. birds, dogs, horses), which can be very inconvenient."
+        ];
+
+        const majorCursesDolmenwood = [
+            "Struck blind by day, but gain unsettlingly clear vision in total darkness (like a creature of the night); you also become cold-blooded.", "Polymorphed into a common Dolmenwood beast (Boar, Stag, Giant Spider, Large Black Dog, Goatman thrall) for 1d6 days. Retain mind but cannot speak and may be hunted.",
+            "Re-roll your lowest ability score using 2d6. The new score reflects a creeping influence of the {FORGOTTEN_GOD_NAME}.", "Cannot benefit from magical healing of any kind until a specific, arduous penance is performed at another holy/unholy site in Dolmenwood, as dictated by a {DOLMENWOOD_ELEMENTAL_SPIRIT}.",
+            "Instantly die if reduced to 0 hit points; body animates 1d4 rounds later as a Woodwose or other plant-like undead under GM control, hostile to former allies.", "Lose all spellcasting ability related to one divine source or arcane tradition until atonement is made to a powerful spirit of that tradition, perhaps one of the {FAIRY_COURT_AFFILIATION}.",
+            "A part of you becomes plant-like or stone-like (e.g., an arm turns to gnarled wood, skin becomes like {DOLMENWOOD_MATERIAL}). -2 to Dex or Cha, but gain +1 AC and vulnerability to a related damage type (e.g. fire for wood, shatter for stone).",
+            "Nightmares of being hunted through Dolmenwood by a {DOLMENWOOD_SILENT_GUARDIAN} prevent restful sleep; gain 1 exhaustion level per night that cannot be removed by normal rest until the curse is lifted.",
+            "Age 1d4 years per day spent within Dolmenwood's borders, or de-age to a child if already very old.", "Disadvantage on all attacks, checks, and saves while in direct sunlight or under the gaze of the {DOLMENWOOD_MOON_PHASE} (whichever is more inconvenient).",
+            "Any non-magical metal weapon wielded by you corrodes and breaks on the first successful hit. Magical weapons have a 25% chance of the same.", "All creatures of the Fey or the Wood have advantage on attacks against you, and you have disadvantage on saves against their abilities.",
+            "You are tethered to this stone site; if you move more than one hex away, you begin to weaken, suffering one level of exhaustion per day until you return.", "You permanently lose the ability to read or write any language, though you can still speak and understand them.",
+            "One of your senses is bizarrely altered: e.g., you see sounds, hear colors, smell emotions. This is incredibly disorienting (disadvantage on Perception and Initiative).",
+            "You attract the ire of a powerful Drune or Witch coven, who will actively seek your ruin.", "Your blood turns to viscous black ichor or sap. You no longer count as 'humanoid' for effects that specify it, and you might be mistaken for a monster.",
+            "You must consume {DOLMENWOOD_MATERIAL} (e.g., chalk, soft stone, specific earth) daily or suffer one level of exhaustion.", "You are compelled to carve disturbing pictograms or runes of the {FORGOTTEN_GOD_NAME} onto any suitable surface you rest near for more than an hour.",
+            "Your reflection shows you as you will be in death, or as a monstrous version of yourself.", "You are haunted by the ghost of the last creature you killed, visible and audible only to you, constantly berating and distracting you."
+        ];
+        
+        const divineCursesDolmenwood = [
+            "Your soul is fractured and part of it becomes bound to this site. If the stones are destroyed, you die. You cannot be resurrected while the stones stand unless your soul-fragment is retrieved.",
+            "Re-roll all ability scores with 3d6, in order. You are becoming an avatar or servitor of the {FORGOTTEN_GOD_NAME} or an entity from the {FAIRY_COURT_AFFILIATION}.",
+            "Automatically fail all saving throws against effects originating from Dolmenwood itself (terrain, flora, fauna, local spirits, Drune magic). You are an outsider here, and the Wood rejects you.",
+            "Suffer double damage from any source that is 'natural' (claws, fangs, thorns, elemental wood/earth/water) or 'supernatural' (fey magic, undead touch, divine smiting).",
+            "You are declared an enemy of BOTH the Seelie and Unseelie Courts. Powerful fey nobles from both sides may send hunters or assassins, or compete to make your life a living hell.",
+            "1d3 companions or loved ones are 'claimed' by Dolmenwood: they vanish, leaving only a single strange token (e.g., a raven's feather, a perfect white stone, a lock of green hair). They may return changed, or as hostile entities, or not at all. Their fate is tied to your atonement.",
+            "Every time you harm a significant creature of Dolmenwood (GM discretion, e.g. a Mossling, a Grimalkin Matriarch, a Treant), you suffer a sympathetic wound of equal severity and one of your ability scores (random) is drained by 1 point.",
+            "Lose all class abilities and memories of your former life. You become a 'Lost Soul,' effectively a commoner with 1 HP and a new, disturbing personality, until you can find a way to reclaim your identity from the Wood, possibly by serving the {FORGOTTEN_GOD_NAME}.",
+            "Polymorphed into a monstrous guardian of this site (e.g., a treant-like horror made of {DOLMENWOOD_MATERIAL}, a beast of living shadow and moss) and compelled to attack any who approach, losing all sense of self until the curse is broken by external, powerful magic.",
+            "Your voice becomes the howling of the wind, the screech of an owl, or the grinding of stones; you can only communicate with those who understand the Wood's 'speech' or through complex pantomime. You cannot cast spells with verbal components.",
+            "You are 'Forgotten': All memories of you fade from the minds of those who knew you within 1d4 days. Written records of your existence turn to dust. You become a ghost in your own life.",
+            "A cascade of curses: you suffer 1d2 feeble, 1d2 minor, and 1 major Dolmenwood curse simultaneously.",
+            "Your lineage is cursed. Any children you sire or bear will be marked by the Wood, possibly born as fey-touched, beastmen, or worse. This curse extends for {GEM_COUNT} generations.",
+            "You become a vessel for a malevolent spirit or minor avatar of the {FORGOTTEN_GOD_NAME}. Each day, make a DC 18 Wisdom save. On a failure, the entity takes control for 1d6 hours, pursuing its own dark agenda.",
+            "You are permanently exiled from the mortal plane, shunted into a bleak and hostile corner of Fairy or a desolate demi-plane, with only a slim chance of ever finding your way back.",
+            "Your heart is replaced with a cold stone from this site. You no longer feel strong emotions, cannot benefit from morale bonuses, and are immune to fear, but also immune to joy or love. You gain vulnerability to bludgeoning damage.",
+            "You are bound to serve the will of the stones' creators or current spiritual owner ({ANCIENT_RACE} spirit, {FAIRY_COURT_AFFILIATION} noble, Drune lich) for a year and a day, performing whatever tasks they demand.",
+            "All food you attempt to eat turns to ash in your mouth, all water to brine. You must find alternative sustenance (e.g. consume raw magic, blood, or emotions) or waste away.",
+            "You become a pariah. Mundane animals flee from you, people are instinctively distrustful and hostile, and even benign spirits shun your presence. You suffer disadvantage on all Charisma-based checks with mortals and mundane creatures.",
+            "The next time you sleep, you do not wake up in the same world. You awaken in a terrifying dreamscape ruled by the {FORGOTTEN_GOD_NAME}, and must find your way out before your physical body perishes from neglect."
+        ];
+
+        // --- HELPER TO PROCESS DYNAMIC TEXT ---
+        const processText = (text, isStrangeEffectContext = false) => {
+            // Special handling for recursive strange effects
+            if (text.includes("{{STRANGE_EFFECT_RECURSIVE}}") && isStrangeEffectContext) {
+                // Get a non-recursive strange effect
+                let effect;
+                do {
+                    effect = getRandomElement(strangeEffects);
+                } while (effect.includes("{{STRANGE_EFFECT_RECURSIVE}}"));
+                text = text.replace("{{STRANGE_EFFECT_RECURSIVE}}", processText(effect, true)); // Process the chosen effect
+            }
+            if (text.includes("{{STRANGE_EFFECT_MULTI_BAD_IDEA}}")) {
+                 const numEffects = Math.floor(Math.random() * 2) + 1; // 1d2
+                 let effectsText = [];
+                 for (let i = 0; i < numEffects; i++) {
+                    let effect;
+                    do {
+                        effect = getRandomElement(strangeEffects);
+                    } while (effect.includes("{{STRANGE_EFFECT_RECURSIVE}}") || effect.includes("{{STRANGE_EFFECT_MULTI_BAD_IDEA}}")); // Avoid problematic recursion
+                    effectsText.push(processText(effect, true));
+                 }
+                 text = text.replace("{{STRANGE_EFFECT_MULTI_BAD_IDEA}}", effectsText.join("<br>AND<br>"));
+            }
+
+
+            // Curse placeholders
+            text = text.replace(/{{FEEBLE_CURSE_DOLMENWOOD}}/g, `(${getRandomElement(feebleCursesDolmenwood)})`);
+            text = text.replace(/{{MINOR_CURSE_DOLMENWOOD}}/g, `(${getRandomElement(minorCursesDolmenwood)})`);
+            text = text.replace(/{{MAJOR_CURSE_DOLMENWOOD}}/g, `(${getRandomElement(majorCursesDolmenwood)})`);
+            text = text.replace(/{{DIVINE_CURSE_DOLMENWOOD}}/g, `(${getRandomElement(divineCursesDolmenwood)})`);
+            
+            // General dynamic content
+            return text.replace(/{([A-Z_]+)}/g, (match, placeholderName) => {
+                if (dynamicContent[placeholderName]) {
+                    return dynamicContent[placeholderName]();
+                }
+                return match; // Return original if placeholder not found
+            });
+        };
+        
+        // --- MAIN GENERATION FUNCTIONS ---
+        const generateStoneSiteDescription = (options) => {
+            let descriptionParts = [];
+            let structureCount = 1;
+
+            if (options.allowComplexStructures) {
+                const complexityRoll = Math.random();
+                if (complexityRoll < 0.15) structureCount = 3; // 15% chance for 3 structures
+                else if (complexityRoll < 0.45) structureCount = 2; // 30% chance for 2 structures (0.45 - 0.15)
+                // Else 55% chance for 1 structure
+            }
+
+            const chosenStructures = getMultipleUniqueElements(stoneStructures, structureCount);
+            let mainStructureText = chosenStructures.map(s => processText(s)).join("<br>AND<br>");
+            if (structureCount > 1) {
+                 descriptionParts.push(`<p><strong class="result-title">The Stones Themselves (A Complex Array):</strong> ${mainStructureText}</p>`);
+            } else {
+                 descriptionParts.push(`<p><strong class="result-title">The Stones Themselves:</strong> ${mainStructureText}</p>`);
+            }
+
+
+            if (options.forceRunes || Math.random() < 0.33) {
+                descriptionParts.push(`<p><strong class="result-title">Whispers Carved in Stone:</strong> ${processText(getRandomElement(weirdRunes))}</p>`);
+            }
+
+            if (options.forceUnusual || Math.random() < 0.33) {
+                descriptionParts.push(`<p><strong class="result-title">Peculiarities of the Place:</strong> ${processText(getRandomElement(somethingUnusual))}</p>`);
+            }
+
+            // Check for strange effect triggers in descriptions
+            let finalDescription = descriptionParts.join('');
+            if (finalDescription.includes("{{STRANGE_EFFECT}}")) {
+                if (options.autoStrangeEffect) {
+                    finalDescription = finalDescription.replace(/{{STRANGE_EFFECT}}/g, () => {
+                        return `<br><strong class='text-yellow-300'>A strange effect is triggered:</strong> ${processText(getRandomElement(strangeEffects), true)}`;
+                    });
+                } else {
+                    finalDescription = finalDescription.replace(/{{STRANGE_EFFECT}}/g, "<br><strong class='text-yellow-300'>(A Strange Effect is triggered! The Wood stirs...)</strong>");
+                }
+            }
+            
+            return finalDescription || "<p>The mists of Dolmenwood obscure this place for now... try again.</p>";
+        };
+
+        const generateDefacementConsequence = (options) => {
+            let consequenceText = processText(getRandomElement(badIdeaConsequences));
+             if (consequenceText.includes("{{STRANGE_EFFECT}}") || consequenceText.includes("{{STRANGE_EFFECT_MULTI_BAD_IDEA}}")) {
+                if (options.autoStrangeEffect) {
+                     consequenceText = consequenceText.replace(/{{STRANGE_EFFECT}}/g, () => {
+                        return `<br><strong class='text-yellow-300'>A final surge of power from the stone:</strong> ${processText(getRandomElement(strangeEffects), true)}`;
+                    });
+                    // The {{STRANGE_EFFECT_MULTI_BAD_IDEA}} is handled by processText now.
+                } else {
+                    consequenceText = consequenceText.replace(/{{STRANGE_EFFECT}}/g, "<br><strong class='text-yellow-300'>(A final surge of power from the stone! Roll separately.)</strong>");
+                    consequenceText = consequenceText.replace(/{{STRANGE_EFFECT_MULTI_BAD_IDEA}}/g, "<br><strong class='text-yellow-300'>(Multiple strange effects lash out! Roll separately.)</strong>");
+                }
+            }
+            return `<p>${consequenceText}</p>`;
+        };
+
+        // --- PUBLIC INTERFACE ---
+        return {
+            generateSite: generateStoneSiteDescription,
+            generateConsequence: generateDefacementConsequence
+        };
+
+    })(); // End of IIFE
+
+    // --- DOM EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const generateButton = document.getElementById('generateStoneButton');
+        const badIdeaButton = document.getElementById('generateBadIdeaButton');
+        const stoneResultDiv = document.getElementById('stoneResult');
+        const badIdeaResultDiv = document.getElementById('badIdeaResult');
+
+        const getOptions = () => {
+            return {
+                allowComplexStructures: document.getElementById('allowComplexStructures').checked,
+                forceRunes: document.getElementById('forceRunes').checked,
+                forceUnusual: document.getElementById('forceUnusual').checked,
+                autoStrangeEffect: document.getElementById('autoStrangeEffect').checked
+            };
+        };
+
+        generateButton.addEventListener('click', () => {
+            stoneResultDiv.innerHTML = DolmenwoodGenerator.generateSite(getOptions());
+        });
+
+        badIdeaButton.addEventListener('click', () => {
+            badIdeaResultDiv.innerHTML = DolmenwoodGenerator.generateConsequence(getOptions());
+        });
+    });
+
+    </script>
+</body>
+</html>
